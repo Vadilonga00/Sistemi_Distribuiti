@@ -20,6 +20,10 @@ class myPrompt(Cmd):
         print('Ciao a te')
 
     def do_showtopic(self, inp):
+        """
+        Shows the topics to which the client is subscribed and all
+        messages exchanged
+        """
         print(self.topic_message)
 
     def do_connect_tcp(self, inp):
@@ -53,6 +57,11 @@ class myPrompt(Cmd):
         return True
 
     def do_subscribe(self, inp):
+        """
+        Subscribes the client to the topic and in case it does not exist
+        creates it
+        param inp: The input is the topic's name given by the user
+        """
         if self.is_connect:
             if str(inp) not in self.topic_message:
                 messaggio = '[SUBSCRIBE] {"topic": "%s"}' % inp
@@ -62,6 +71,11 @@ class myPrompt(Cmd):
                 print(f'Already subscribed to the topic!')
 
     def do_unsubscribe(self, inp):
+        """
+        Unsubscribes the client from the topic, if the client is not 
+        subscribed to the given topic sends an error message
+        param inp: The input is the topic's name given by the user
+        """
         if self.is_connect:
             if str(inp) in self.topic_message:
                 messaggio = '[UNSUBSCRIBE] {"topic": "%s"}' % inp
