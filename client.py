@@ -48,6 +48,24 @@ class myPrompt(Cmd):
             self.socket.close()
             self.is_connect = False
             self.topic_message = {}
+        
+    def do_subscribe(self, inp):
+        if self.is_connect:
+            if str(inp) not in self.topic_message:
+                messaggio = '[SUBSCRIBE] {"topic": "%s"}' % inp
+                self._sendall2(messaggio)
+                self.topic_message[inp] = []
+            else:
+                print(f'Already subscribed to the topic!')
+
+    def do_unsubscribe(self, inp):
+        if self.is_connect:
+            if str(inp) in self.topic_message:
+                messaggio = '[UNSUBSCRIBE] {"topic": "%s"}' % inp
+                self._sendall2(messaggio)
+                del self.topic_message[inp]
+            else:
+                print(f'Error! You are not subscribed to this topic!')
 
     def do_exit(self, inp):
         print('Ciao e alla prossima!')
@@ -58,6 +76,9 @@ class myPrompt(Cmd):
         if self.is_connect:
             self.socket.close()
         pass
+    
+    def _sendall2(self, messaggio):
+        self.socket.sendall(messaggio.encode('UTF-8'))
 
 if __name__ == '__main__':
     myIP = socket.gethostbyname(socket.gethostname())
