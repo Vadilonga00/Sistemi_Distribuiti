@@ -154,6 +154,11 @@ class myPrompt(Cmd):
         pass
     
     def _sendall2(self, messaggio):
+        """
+        allows the sending of the input message encoding it with utf-8
+        :param messaggio:  The message that the client must send to the
+         broker
+        """
         self.socket.sendall(messaggio.encode('UTF-8'))
 
 if __name__ == '__main__':
