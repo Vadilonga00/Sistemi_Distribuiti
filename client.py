@@ -3,6 +3,8 @@ from sys import argv
 from cmd import Cmd
 from threading import Thread
 import json
+import time
+import select
 
 class myPrompt(Cmd):
     prompt = '>'
@@ -40,7 +42,8 @@ class myPrompt(Cmd):
                 self.is_connect = True
                 messaggio = '[CONNECT]'
                 self._sendall2(messaggio)
-                self.threading = Thread(target=self._receive_message, args=(self.socket,)).start()
+                self.threading = Thread(target=self._receive_message, args=(self.socket,))
+                self.threading.start()
             except:
                 self.socket = None
                 self.is_connect = False
@@ -77,18 +80,20 @@ class myPrompt(Cmd):
         Makes the disconnection between broker and client
         """
         if self.is_connect:
+            self.is_connect = False
+            self.threading.join()
             messaggio = '[DISCONNECT]'
             self._sendall2(messaggio)
             self.socket.close()
-            self.is_connect = False
             self.topic_message = {}
 
     def do_exit(self, inp):
         """
         Disconnects the client from the broker and closes the console
         """
+        self.do_disconnect(None)
         print('Ciao e alla prossima!')
-        self.close()
+        self._close()
         return True
 
     def do_subscribe(self, inp):
@@ -149,18 +154,21 @@ class myPrompt(Cmd):
     def _receive_message(self, clientsocket):
         while self.is_connect:
             try:
-                data = clientsocket.recv(1024)
-                if not data:
-                    print("Connection lost with broker!")
-                    self.do_disconnect(None)
-                else:
+                received = False
+                clientsocket.setblocking(0)
+                ready = select.select([clientsocket], [], [], 2.0)
+                if ready[0]:
+                    data = clientsocket.recv(4096)
+                    received = True
+                if received:
                     a = data.decode('UTF-8')
                     print(a)
                     print(type(a))
                     if a[0] == '{':
                         self._buffer(a)
             except:
-                print('error')
+                print('errore')
+
 
     def _close(self):
         if self.is_connect:
