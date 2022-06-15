@@ -8,8 +8,8 @@ class myPrompt(Cmd):
     prompt = '>'
     intro = 'Ciao, benvenuto nel mio prompt:'
 
-    def _init_(self):
-        super()._init_()
+    def __init__(self):
+        super().__init__()
         self.socket = clientsocket
         self.is_connect = True
         self.topic_message = {}
