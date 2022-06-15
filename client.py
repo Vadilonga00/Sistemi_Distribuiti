@@ -41,6 +41,23 @@ class myPrompt(Cmd):
             self.threading.start()
             print(self.threading)
 
+    def do_disconnect(self, inp):
+        if self.is_connect:
+            messaggio = '[DISCONNECT]'
+            self._sendall2(messaggio)
+            self.socket.close()
+            self.is_connect = False
+            self.topic_message = {}
+
+    def do_exit(self, inp):
+        print('Ciao e alla prossima!')
+        self.close()
+        return True
+
+    def _close(self):
+        if self.is_connect:
+            self.socket.close()
+        pass
 
 if __name__ == '__main__':
     myIP = socket.gethostbyname(socket.gethostname())
