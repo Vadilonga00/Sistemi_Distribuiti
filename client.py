@@ -60,7 +60,7 @@ class myPrompt(Cmd):
         """
         Subscribes the client to the topic and in case it does not exist
         creates it
-        param inp: The input is the topic's name given by the user
+        :param inp: The input is the topic's name given by the user
         """
         if self.is_connect:
             if str(inp) not in self.topic_message:
@@ -74,7 +74,7 @@ class myPrompt(Cmd):
         """
         Unsubscribes the client from the topic, if the client is not 
         subscribed to the given topic sends an error message
-        param inp: The input is the topic's name given by the user
+        :param inp: The input is the topic's name given by the user
         """
         if self.is_connect:
             if str(inp) in self.topic_message:
@@ -85,6 +85,12 @@ class myPrompt(Cmd):
                 print(f'Error! You are not subscribed to this topic!')
 
     def do_send_message(self, inp):
+        """
+        Allows the client to send a message to a particular topic in
+        which it is subscribed
+        :param inp: A string given by the client containing the topic
+        and message separated by "&"
+        """
         if self.is_connect:
             inp = inp.split('&') # modificare per inviare messagi di più parole
             topic = inp[0].strip()
@@ -93,6 +99,12 @@ class myPrompt(Cmd):
             self._sendall2(messaggio)
 
     def _buffer(self,a):
+        """
+        Allows you to save communications sent in a given topic by specifying
+        the sender id and the content of the message
+        :param a: A string containing the sender id, the topic and the content
+        of the message
+        """
         a = json.loads(a)
         print(a)
         print(type(a))
