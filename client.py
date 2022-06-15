@@ -57,6 +57,10 @@ class myPrompt(Cmd):
             self.is_connect = True
 
     def do_connect_to_broker(self, inp):
+        """
+        Enables the highest level connection between client and broker,
+        and places the client listening from any messages from the broker
+        """
         if self.is_connect:
             messaggio = '[CONNECT]'
             self._sendall2(messaggio)
@@ -65,6 +69,9 @@ class myPrompt(Cmd):
             print(self.threading)
 
     def do_disconnect(self, inp):
+        """
+        Makes the disconnection between broker and client
+        """
         if self.is_connect:
             messaggio = '[DISCONNECT]'
             self._sendall2(messaggio)
