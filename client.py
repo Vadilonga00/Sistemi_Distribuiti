@@ -26,6 +26,27 @@ class myPrompt(Cmd):
         """
         print(self.topic_message)
 
+    def do_connect(self, inp):
+        if self.is_connect:
+            print('Already connected to the broker!')
+            return
+        else:
+            try:
+                args = inp.split(" ")
+                address = args[0]
+                port = int(args[1])
+                self.socket = socket.socket(family=socket.AF_INET, type=socket.SOCK_STREAM)
+                self.socket.connect((address, port))
+                self.is_connect = True
+                messaggio = '[CONNECT]'
+                self._sendall2(messaggio)
+                self.threading = Thread(target=self._receive_message, args=(self.socket,)).start()
+            except:
+                self.socket = None
+                self.is_connect = False
+                self.topics = []
+                print('Connection failed')
+
     def do_connect_tcp(self, inp):
         if not self.is_connect:
             args = inp.split(" ")
@@ -141,9 +162,10 @@ if __name__ == '__main__':
     brokerIP = socket.gethostbyname(socket.gethostname())
     brokerPort = int(argv[2])
 
-    clientsocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_STREAM) #viene letta dal cmd?
+    clientsocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_STREAM)
     clientsocket.bind((myIP, myPORT))
     clientsocket.connect((brokerIP, brokerPort))
     
     prompt = myPrompt()
+    prompt.do_connect_to_broker('')
     prompt.cmdloop()
