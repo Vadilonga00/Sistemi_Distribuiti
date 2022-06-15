@@ -2,9 +2,7 @@ import socket
 from sys import argv
 from cmd import Cmd
 from threading import Thread
-
-def managePrompt(prompt):
-    prompt.cmdloop()
+import json
 
 class myPrompt(Cmd):
     prompt = '>'
@@ -48,7 +46,12 @@ class myPrompt(Cmd):
             self.socket.close()
             self.is_connect = False
             self.topic_message = {}
-        
+
+    def do_exit(self, inp):
+        print('Ciao e alla prossima!')
+        self.close()
+        return True
+
     def do_subscribe(self, inp):
         if self.is_connect:
             if str(inp) not in self.topic_message:
@@ -67,10 +70,36 @@ class myPrompt(Cmd):
             else:
                 print(f'Error! You are not subscribed to this topic!')
 
-    def do_exit(self, inp):
-        print('Ciao e alla prossima!')
-        self.close()
-        return True
+    def do_send_message(self, inp):
+        if self.is_connect:
+            inp = inp.split('&') # modificare per inviare messagi di più parole
+            topic = inp[0].strip()
+            message = inp[1].strip()
+            messaggio = '[SEND] {"topic": "%s", "message": "%s"}' % (topic, message)
+            self._sendall2(messaggio)
+
+    def _buffer(self,a):
+        a = json.loads(a)
+        print(a)
+        print(type(a))
+        self.topic_message[a['topic']].append([a['id'],a['messaggio']])
+        print(self.topic_message)
+
+    def _receive_message(self, clientsocket):
+        while self.is_connect:
+            try:
+                data = clientsocket.recv(1024)
+                if not data:
+                    print("Connection lost with broker!")
+                    self.do_disconnect(None)
+                else:
+                    a = data.decode('UTF-8')
+                    print(a)
+                    print(type(a))
+                    if a[0] == '{':
+                        self._buffer(a)
+            except:
+                print('error')
 
     def _close(self):
         if self.is_connect:
