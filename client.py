@@ -48,6 +48,10 @@ class myPrompt(Cmd):
                 print('Connection failed')
 
     def do_connect_tcp(self, inp):
+        """
+        Establishes a tcp-level connection between client brokers
+        :param inp: A string separated by a space that contains the broker id and port
+        """
         if not self.is_connect:
             args = inp.split(" ")
             address = args[0]
@@ -57,6 +61,10 @@ class myPrompt(Cmd):
             self.is_connect = True
 
     def do_connect_to_broker(self, inp):
+        """
+        Enables the highest level connection between client and broker,
+        and places the client listening from any messages from the broker
+        """
         if self.is_connect:
             messaggio = '[CONNECT]'
             self._sendall2(messaggio)
@@ -65,6 +73,9 @@ class myPrompt(Cmd):
             print(self.threading)
 
     def do_disconnect(self, inp):
+        """
+        Makes the disconnection between broker and client
+        """
         if self.is_connect:
             messaggio = '[DISCONNECT]'
             self._sendall2(messaggio)
@@ -73,6 +84,9 @@ class myPrompt(Cmd):
             self.topic_message = {}
 
     def do_exit(self, inp):
+        """
+        Disconnects the client from the broker and closes the console
+        """
         print('Ciao e alla prossima!')
         self.close()
         return True
