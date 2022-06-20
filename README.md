@@ -24,10 +24,18 @@ Sviluppare un client per il broker con le seguenti caratteristiche:
 Before running the client make sure you have launched the broker and get ip address and its port.
 If after running the client successfully nothing happens check the firewalls of your device and network.
 
+To execute broker.py you must:
+    
+   -Insert the broker port.
+    
+    Example of execution commands: python3 broker.py 12345
+    
+    In this way you will run the broker on port 12345 and the ip adress of your device.
+ 
 
 ## To execute
 
-To execute the script you must:
+To execute client.py you must:
 
    -Insert the client port, the broker ip and the broker port.
    
@@ -36,6 +44,7 @@ To execute the script you must:
     
     
     In this way you will connect your client (on port 1234) to the broker (on ip 192.178.10.2 and port 12345)
+    
     
 # Authors
 Code written by:
