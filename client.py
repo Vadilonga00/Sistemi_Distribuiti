@@ -169,7 +169,6 @@ class myPrompt(Cmd):
         """
         a = json.loads(a)
         self.topic_message[a['topic']].append([a['id'],a['messaggio']])
-        print(self.topic_message)
 
     def _close(self):
         if self.is_connect and self.socket:
