@@ -76,7 +76,6 @@ class myPrompt(Cmd):
                     messaggio = '[SUBSCRIBE] {"topic": "%s"}' % inp
                     self._send_message(messaggio)
                     self.topic_message[inp] = []
-                    print('Subscribed to the topic %s' % inp)
                 except Exception as error_type:
                     print(f'[ERROR] -> Error sending the subscription message!\n Error type: {error_type}')
                 
@@ -97,7 +96,6 @@ class myPrompt(Cmd):
                     messaggio = '[UNSUBSCRIBE] {"topic": "%s"}' % inp
                     self._send_message(messaggio)
                     del self.topic_message[inp]
-                    print('Unsubscribed from the topic %s' % inp)
                 except Exception as error_type:
                     print(f'[ERROR] -> Error sending the unsubscription message!\n Error type: {error_type}')      
             else:
@@ -117,13 +115,13 @@ class myPrompt(Cmd):
         """
         Makes the disconnection between broker and client
         """
-        if self.is_connect and self.socket:
+        if self.is_connect:
             self.is_connect = False
             self.threading.join()
             messaggio = '[DISCONNECT]'
             self._send_message(messaggio)
-            self.socket.close()
             self.topic_message = {}
+            self.socket.close()
             print(f'Disconnected from the broker, to log back on run connect command')
 
     def do_exit(self, inp):
@@ -151,7 +149,7 @@ class myPrompt(Cmd):
                     if a[0] == '{':
                         self._buffer(a)
             except Exception as error_type:
-                print(f'[ERROR] -> Error sending the unsubscription message!\n Error type: {error_type}')     
+                print(f'[ERROR] -> Error in receiving message!\n Error type: {error_type}')
     
     def _send_message(self, messaggio):
         """
