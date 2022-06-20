@@ -136,7 +136,7 @@ class myPrompt(Cmd):
 
     #UTILS METHODS
     def _receive_message(self, clientsocket):
-        while self.is_connect:
+        while self.is_connect and self.socket:
             try:
                 received = False
                 clientsocket.setblocking(0)
