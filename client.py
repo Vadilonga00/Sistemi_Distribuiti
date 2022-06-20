@@ -19,6 +19,10 @@ class myPrompt(Cmd):
         self.threading = []
 
     def do_connect(self, inp):
+        """
+        This command try to connect to the broker
+        :param inp: Broker IP and broker Port separeted by a space
+        """
         if self.is_connect:
             print('Already connected to the broker!')
             return
@@ -29,9 +33,10 @@ class myPrompt(Cmd):
                 port = int(args[1])
                 self.socket = socket.socket(family=socket.AF_INET, type=socket.SOCK_STREAM)
                 self.socket.connect((address, port))
-                self.is_connect = True
                 messaggio = '[CONNECT]'
                 self._sendall2(messaggio)
+                self.is_connect = True
+                print(f'Connected to the broker')
                 self.threading = Thread(target=self._receive_message, args=(self.socket,))
                 self.threading.start()
             except Exception as error_type:
@@ -44,29 +49,36 @@ class myPrompt(Cmd):
         """
         Allows the client to send a message to a particular topic in
         which it is subscribed
-        :param inp: A string given by the client containing the topic
-        and message separated by "&"
+        :param inp: Topic and message separated by font "&"
         """
-        if self.is_connect:
-            inp = inp.split('&') # modificare per inviare messagi di più parole
-            topic = inp[0].strip()
-            message = inp[1].strip()
-            messaggio = '[SEND] {"topic": "%s", "message": "%s"}' % (topic, message)
-            self._sendall2(messaggio)
-        else:
-            print('You are not connected to the broker! Before proceeding run a connect')
+        try:
+            if self.is_connect:
+                inp = inp.split('&') # modificare per inviare messagi di più parole
+                topic = inp[0].strip()
+                message = inp[1].strip()
+                messaggio = '[SEND] {"topic": "%s", "message": "%s"}' % (topic, message)
+                self._sendall2(messaggio)
+            else:
+                print('You are not connected to the broker! Before proceeding run a connect')
+         
+        except Exception as error_type:
+                print(f'[ERROR] -> Error sending message!\n Error type: {error_type}')
 
     def do_subscribe(self, inp):
         """
         Subscribes the client to the topic and in case it does not exist
         creates it
-        :param inp: The input is the topic's name given by the user
+        :param inp: Topic's name given by the user
         """
         if self.is_connect:
             if str(inp) not in self.topic_message:
-                messaggio = '[SUBSCRIBE] {"topic": "%s"}' % inp
-                self._sendall2(messaggio)
-                self.topic_message[inp] = []
+                try:
+                    messaggio = '[SUBSCRIBE] {"topic": "%s"}' % inp
+                    self._sendall2(messaggio)
+                    self.topic_message[inp] = []
+                except Exception as error_type:
+                    print(f'[ERROR] -> Error sending the subscription message!\n Error type: {error_type}')
+                
             else:
                 print(f'Already subscribed to the topic!')
         else:
@@ -80,9 +92,12 @@ class myPrompt(Cmd):
         """
         if self.is_connect:
             if str(inp) in self.topic_message:
-                messaggio = '[UNSUBSCRIBE] {"topic": "%s"}' % inp
-                self._sendall2(messaggio)
-                del self.topic_message[inp]
+                try:
+                    messaggio = '[UNSUBSCRIBE] {"topic": "%s"}' % inp
+                    self._sendall2(messaggio)
+                    del self.topic_message[inp]
+                except Exception as error_type:
+                    print(f'[ERROR] -> Error sending the unsubscription message!\n Error type: {error_type}')      
             else:
                 print(f'Error! You are not subscribed to this topic!')
         else:
@@ -130,15 +145,14 @@ class myPrompt(Cmd):
                 if received:
                     a = data.decode('UTF-8')
                     print(a)
-                    print(type(a))
                     if a[0] == '{':
                         self._buffer(a)
-            except:
-                print('errore')
+            except Exception as error_type:
+                print(f'[ERROR] -> Error sending the unsubscription message!\n Error type: {error_type}')     
     
     def _sendall2(self, messaggio):
         """
-        allows the sending of the input message encoding it with utf-8
+        Allows the sending of the input message encoding it with utf-8
         :param messaggio:  The message that the client must send to the
          broker
         """
@@ -148,12 +162,10 @@ class myPrompt(Cmd):
         """
         Allows you to save communications sent in a given topic by specifying
         the sender id and the content of the message
-        :param a: A string containing the sender id, the topic and the content
+        :param a: Sender id, topic and the content
         of the message
         """
         a = json.loads(a)
-        print(a)
-        print(type(a))
         self.topic_message[a['topic']].append([a['id'],a['messaggio']])
         print(self.topic_message)
 
