@@ -56,9 +56,13 @@ class myPrompt(Cmd):
             if self.is_connect:
                 inp = inp.split('&') # modificare per inviare messagi di più parole
                 topic = inp[0].strip()
-                message = inp[1].strip()
-                messaggio = '[SEND] {"topic": "%s", "message": "%s"}' % (topic, message)
-                self._send_message(messaggio)
+                if topic in topic_message.keys():
+                    message = inp[1].strip()
+                    messaggio = '[SEND] {"topic": "%s", "message": "%s"}' % (topic, message)
+                    self._send_message(messaggio)
+                else:
+                    print(f'You are not subscribed to the topic, before posting a message run'
+                          f' the <subscribe> command followed by the topic')
             else:
                 print('You are not connected to the broker! Before proceeding run a connect')
          
