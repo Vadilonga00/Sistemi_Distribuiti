@@ -162,7 +162,6 @@ def disconnect(id_):
     mutexACs.acquire()
     del activeConnections[id_]
     mutexACs.release()
-    conn.close()
 
 
 def applyCommand(id_, conn, comando, stato):
@@ -193,6 +192,8 @@ def connection_manager_thread(id_, conn):
         comando = decodeCommand(data.decode('utf-8'), stato)
         applyCommand(id_, conn, comando, stato)
         stato = updateState(id_, stato, comando)
+
+
 
 
 if __name__ == '__main__':

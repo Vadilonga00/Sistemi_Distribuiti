@@ -122,7 +122,6 @@ class myPrompt(Cmd):
             messaggio = '[DISCONNECT]'
             self._send_message(messaggio)
             self.topic_message = {}
-            self.socket.close()
             print(f'Disconnected from the broker, to log back on run connect command')
 
     def do_exit(self, inp):
@@ -136,14 +135,14 @@ class myPrompt(Cmd):
 
     #UTILS METHODS
     def _receive_message(self, clientsocket):
-        while self.is_connect and self.socket:
+        while self.is_connect:
             try:
                 received = False
-                clientsocket.setblocking(0)
-                ready = select.select([clientsocket], [], [], 2.0)
-                if ready[0]:
+                ready,output2,output3 = select.select([clientsocket], [], [], 2.0)
+                if ready != []:
                     data = clientsocket.recv(4096)
-                    received = True
+                    if data:
+                        received = True
                 if received:
                     a = data.decode('UTF-8')
                     print(a)
@@ -151,6 +150,8 @@ class myPrompt(Cmd):
                         self._buffer(a)
             except Exception as error_type:
                 print(f'[ERROR] -> Error in receiving message!\n Error type: {error_type}')
+                self.is_connect=False
+                print(f'To log back on run <connect> command')
     
     def _send_message(self, messaggio):
         """
@@ -171,7 +172,7 @@ class myPrompt(Cmd):
         self.topic_message[a['topic']].append([a['id'],a['messaggio']])
 
     def _close(self):
-        if self.is_connect and self.socket:
+        if self.socket:
             self.socket.close()
 
 if __name__ == '__main__':
