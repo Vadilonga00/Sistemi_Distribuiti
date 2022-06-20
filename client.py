@@ -8,25 +8,15 @@ import select
 
 class myPrompt(Cmd):
     prompt = '>'
-    intro = 'Ciao, benvenuto nel mio prompt:'
+    intro = '\n\nWelcome to the client!\n' \
+            'Documentation is available by typing <help>\n\n'
 
     def __init__(self):
         super().__init__()
-        self.socket = clientsocket
-        self.is_connect = True
+        self.socket = None
+        self.is_connect = False
         self.topic_message = {}
         self.threading = []
-
-    @staticmethod
-    def do_ciao(inp):
-        print('Ciao a te')
-
-    def do_showtopic(self, inp):
-        """
-        Shows the topics to which the client is subscribed and all
-        messages exchanged
-        """
-        print(self.topic_message)
 
     def do_connect(self, inp):
         if self.is_connect:
@@ -44,42 +34,73 @@ class myPrompt(Cmd):
                 self._sendall2(messaggio)
                 self.threading = Thread(target=self._receive_message, args=(self.socket,))
                 self.threading.start()
-            except:
+            except Exception as error_type:
                 self.socket = None
                 self.is_connect = False
                 self.topics = []
-                print('Connection failed')
+                print(f'[ERROR] -> Connection failed: {error_type}')
 
-    def do_connect_tcp(self, inp):
+    def do_send_message(self, inp):
         """
-        Establishes a tcp-level connection between client brokers
-        :param inp: A string separated by a space that contains the broker id and port
-        """
-        if not self.is_connect:
-            args = inp.split(" ")
-            address = args[0]
-            port = int(args[1])
-            self.socket = socket.socket(family=socket.AF_INET, type=socket.SOCK_STREAM)
-            self.socket.connect((address, port))
-            self.is_connect = True
-
-    def do_connect_to_broker(self, inp):
-        """
-        Enables the highest level connection between client and broker,
-        and places the client listening from any messages from the broker
+        Allows the client to send a message to a particular topic in
+        which it is subscribed
+        :param inp: A string given by the client containing the topic
+        and message separated by "&"
         """
         if self.is_connect:
-            messaggio = '[CONNECT]'
+            inp = inp.split('&') # modificare per inviare messagi di più parole
+            topic = inp[0].strip()
+            message = inp[1].strip()
+            messaggio = '[SEND] {"topic": "%s", "message": "%s"}' % (topic, message)
             self._sendall2(messaggio)
-            self.threading = Thread(target=self._receive_message, args=(self.socket,))
-            self.threading.start()
-            print(self.threading)
+        else:
+            print('You are not connected to the broker! Before proceeding run a connect')
+
+    def do_subscribe(self, inp):
+        """
+        Subscribes the client to the topic and in case it does not exist
+        creates it
+        :param inp: The input is the topic's name given by the user
+        """
+        if self.is_connect:
+            if str(inp) not in self.topic_message:
+                messaggio = '[SUBSCRIBE] {"topic": "%s"}' % inp
+                self._sendall2(messaggio)
+                self.topic_message[inp] = []
+            else:
+                print(f'Already subscribed to the topic!')
+        else:
+            print('You are not connected to the broker! Before proceeding run a connect')
+
+    def do_unsubscribe(self, inp):
+        """
+        Unsubscribes the client from the topic, if the client is not
+        subscribed to the given topic sends an error message
+        :param inp: The input is the topic's name given by the user
+        """
+        if self.is_connect:
+            if str(inp) in self.topic_message:
+                messaggio = '[UNSUBSCRIBE] {"topic": "%s"}' % inp
+                self._sendall2(messaggio)
+                del self.topic_message[inp]
+            else:
+                print(f'Error! You are not subscribed to this topic!')
+        else:
+            print('You are not connected to the broker! Before proceeding run a connect')
+
+
+    def do_showtopic(self, inp):
+        """
+        Shows the topics to which the client is subscribed and all
+        messages exchanged
+        """
+        print(self.topic_message)
 
     def do_disconnect(self, inp):
         """
         Makes the disconnection between broker and client
         """
-        if self.is_connect:
+        if self.is_connect and self.socket:
             self.is_connect = False
             self.threading.join()
             messaggio = '[DISCONNECT]'
@@ -96,61 +117,7 @@ class myPrompt(Cmd):
         self._close()
         return True
 
-    def do_subscribe(self, inp):
-        """
-        Subscribes the client to the topic and in case it does not exist
-        creates it
-        :param inp: The input is the topic's name given by the user
-        """
-        if self.is_connect:
-            if str(inp) not in self.topic_message:
-                messaggio = '[SUBSCRIBE] {"topic": "%s"}' % inp
-                self._sendall2(messaggio)
-                self.topic_message[inp] = []
-            else:
-                print(f'Already subscribed to the topic!')
-
-    def do_unsubscribe(self, inp):
-        """
-        Unsubscribes the client from the topic, if the client is not 
-        subscribed to the given topic sends an error message
-        :param inp: The input is the topic's name given by the user
-        """
-        if self.is_connect:
-            if str(inp) in self.topic_message:
-                messaggio = '[UNSUBSCRIBE] {"topic": "%s"}' % inp
-                self._sendall2(messaggio)
-                del self.topic_message[inp]
-            else:
-                print(f'Error! You are not subscribed to this topic!')
-
-    def do_send_message(self, inp):
-        """
-        Allows the client to send a message to a particular topic in
-        which it is subscribed
-        :param inp: A string given by the client containing the topic
-        and message separated by "&"
-        """
-        if self.is_connect:
-            inp = inp.split('&') # modificare per inviare messagi di più parole
-            topic = inp[0].strip()
-            message = inp[1].strip()
-            messaggio = '[SEND] {"topic": "%s", "message": "%s"}' % (topic, message)
-            self._sendall2(messaggio)
-
-    def _buffer(self,a):
-        """
-        Allows you to save communications sent in a given topic by specifying
-        the sender id and the content of the message
-        :param a: A string containing the sender id, the topic and the content
-        of the message
-        """
-        a = json.loads(a)
-        print(a)
-        print(type(a))
-        self.topic_message[a['topic']].append([a['id'],a['messaggio']])
-        print(self.topic_message)
-
+    #UTILS METHODS
     def _receive_message(self, clientsocket):
         while self.is_connect:
             try:
@@ -168,12 +135,6 @@ class myPrompt(Cmd):
                         self._buffer(a)
             except:
                 print('errore')
-
-
-    def _close(self):
-        if self.is_connect:
-            self.socket.close()
-        pass
     
     def _sendall2(self, messaggio):
         """
@@ -183,16 +144,29 @@ class myPrompt(Cmd):
         """
         self.socket.sendall(messaggio.encode('UTF-8'))
 
+    def _buffer(self,a):
+        """
+        Allows you to save communications sent in a given topic by specifying
+        the sender id and the content of the message
+        :param a: A string containing the sender id, the topic and the content
+        of the message
+        """
+        a = json.loads(a)
+        print(a)
+        print(type(a))
+        self.topic_message[a['topic']].append([a['id'],a['messaggio']])
+        print(self.topic_message)
+
+    def _close(self):
+        if self.is_connect and self.socket:
+            self.socket.close()
+
 if __name__ == '__main__':
     myIP = socket.gethostbyname(socket.gethostname())
     myPORT = int(argv[1])
     brokerIP = socket.gethostbyname(socket.gethostname())
     brokerPort = int(argv[2])
 
-    clientsocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_STREAM)
-    clientsocket.bind((myIP, myPORT))
-    clientsocket.connect((brokerIP, brokerPort))
-    
     prompt = myPrompt()
-    prompt.do_connect_to_broker('')
+    prompt.do_connect('%s %s' % (brokerIP, brokerPort))
     prompt.cmdloop()
