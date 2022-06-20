@@ -25,7 +25,7 @@ Before running the client make sure you have launched the broker and get ip addr
 If after running the client successfully nothing happens check the firewalls of your device and network.
 
 
-##To execute
+## To execute
 
 To execute the script you must:
 
