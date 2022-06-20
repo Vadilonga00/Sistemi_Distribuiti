@@ -5,6 +5,7 @@ from threading import Thread
 import json
 import time
 import select
+import parser
 
 class myPrompt(Cmd):
     prompt = '>'
@@ -175,10 +176,11 @@ class myPrompt(Cmd):
             self.socket.close()
 
 if __name__ == '__main__':
+    parser = parser.initialize_parser()
     myIP = socket.gethostbyname(socket.gethostname())
-    myPORT = int(argv[1])
-    brokerIP = socket.gethostbyname(socket.gethostname())
-    brokerPort = int(argv[2])
+    myPORT = parser.client_port
+    brokerIP = parser.broker_ip
+    brokerPort = parser.broker_port
 
     prompt = myPrompt()
     prompt.do_connect('%s %s' % (brokerIP, brokerPort))
