@@ -32,7 +32,7 @@ To execute the script you must:
    -Insert the client port, the broker ip and the broker port.
    
    
-    Example of execution commands: python3 client.py -i1 1234 -i2 192.178.10.2 -i3 12345 
+    Example of execution commands: python3 client.py 1234 192.178.10.2 12345 
     
     
     In this way you will connect your client (on port 1234) to the broker (on ip 192.178.10.2 and port 12345)
