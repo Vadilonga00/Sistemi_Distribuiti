@@ -37,3 +37,9 @@ To execute the script you must:
     
     In this way you will connect your client (on port 1234) to the broker (on ip 192.178.10.2 and port 12345)
     
+# Authors
+Code written by:
+
+Carpineti Francesco, Contini Maria Elena, Vadilonga Francesca
+
+    
