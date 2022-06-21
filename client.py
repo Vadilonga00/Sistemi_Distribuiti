@@ -7,6 +7,7 @@ import time
 import select
 import parser
 
+
 class myPrompt(Cmd):
     prompt = '>'
     intro = '\n\nWelcome to the client!\n' \
@@ -43,7 +44,6 @@ class myPrompt(Cmd):
             except Exception as error_type:
                 self.socket = None
                 self.is_connect = False
-                self.topics = []
                 print(f'[ERROR] -> Connection failed: {error_type}')
 
     def do_message(self, inp):
@@ -55,8 +55,8 @@ class myPrompt(Cmd):
         """
         if self.is_connect:
             try:
-                if inp.count('&')==1:
-                    inp = inp.split('&') # modificare per inviare messagi di più parole
+                if inp.count('&') == 1:
+                    inp = inp.split('&')  # modificare per inviare messagi di più parole
                     topic = inp[0].strip()
                     if topic in self.topic_message.keys():
                         message = inp[1].strip()
@@ -67,7 +67,7 @@ class myPrompt(Cmd):
                               f' run the <subscribe> command followed by the topic')
                 else:
                     print('Font "&" must only be used to separete topic and message!')
-         
+
             except Exception as error_type:
                 print(f'[ERROR] -> Error sending message!\n Error type: {error_type}')
         else:
@@ -87,7 +87,7 @@ class myPrompt(Cmd):
                     self.topic_message[inp] = []
                 except Exception as error_type:
                     print(f'[ERROR] -> Error sending the subscription message!\n Error type: {error_type}')
-                
+
             else:
                 print(f'Already subscribed to the topic!')
         else:
@@ -106,12 +106,11 @@ class myPrompt(Cmd):
                     self._send_message(messaggio)
                     del self.topic_message[inp]
                 except Exception as error_type:
-                    print(f'[ERROR] -> Error sending the unsubscription message!\n Error type: {error_type}')      
+                    print(f'[ERROR] -> Error sending the unsubscription message!\n Error type: {error_type}')
             else:
                 print(f'Error! You are not subscribed to this topic!')
         else:
             print('You are not connected to the broker! Before proceeding run a connect')
-
 
     def do_message_history(self, inp):
         """
@@ -141,21 +140,21 @@ class myPrompt(Cmd):
         self._close()
         return True
 
-    #UTILS METHODS
+    # UTILS METHODS
     def _receive_message(self, clientsocket):
         while self.is_connect:
             try:
-                readable, writable,exceptional = select.select([clientsocket], [], [], 2.0)
+                readable, writable, exceptional = select.select([clientsocket], [], [], 2.0)
                 if readable != []:
                     data = clientsocket.recv(4096)
-                    if data:                        
+                    if data:
                         a = data.decode('UTF-8')
                         print(a)
                         if a[0] == '{':
                             self._buffer(a)
             except Exception as error_type:
                 print(f'[ERROR] -> Error in receiving message!\n Error type: {error_type}')
-    
+
     def _send_message(self, messaggio):
         """
         Allows the sending of the input message encoding it with utf-8
@@ -164,7 +163,7 @@ class myPrompt(Cmd):
         """
         self.socket.sendall(messaggio.encode('UTF-8'))
 
-    def _buffer(self,a):
+    def _buffer(self, a):
         """
         Allows you to save communications sent in a given topic by specifying
         the sender id and the content of the message
@@ -172,11 +171,12 @@ class myPrompt(Cmd):
         of the message
         """
         a = json.loads(a)
-        self.topic_message[a['topic']].append([a['id'],a['messaggio']])
+        self.topic_message[a['topic']].append([a['id'], a['messaggio']])
 
     def _close(self):
         if self.socket:
             self.socket.close()
+
 
 if __name__ == '__main__':
     parser = parser.initialize_parser()
