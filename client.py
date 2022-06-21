@@ -53,8 +53,8 @@ class myPrompt(Cmd):
         :param inp: Topic and message separated by font "&" used only  for  this
         purpose
         """
-        try:
-            if self.is_connect:
+        if self.is_connect:
+            try:
                 if inp.count('&')==1:
                     inp = inp.split('&') # modificare per inviare messagi di più parole
                     topic = inp[0].strip()
@@ -67,11 +67,11 @@ class myPrompt(Cmd):
                               f' run the <subscribe> command followed by the topic')
                 else:
                     print('Font "&" must only be used to separete topic and message!')
-            else:
-                print('You are not connected to the broker! Before proceeding run a connect')
          
-        except Exception as error_type:
+            except Exception as error_type:
                 print(f'[ERROR] -> Error sending message!\n Error type: {error_type}')
+        else:
+            print('You are not connected to the broker! Before proceeding run a connect')
 
     def do_subscribe(self, inp):
         """
