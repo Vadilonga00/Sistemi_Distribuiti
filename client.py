@@ -50,19 +50,23 @@ class myPrompt(Cmd):
         """
         Allows the client to send a message to a particular topic in
         which it is subscribed
-        :param inp: Topic and message separated by font "&"
+        :param inp: Topic and message separated by font "&" used only  for  this
+        purpose
         """
         try:
             if self.is_connect:
-                inp = inp.split('&') # modificare per inviare messagi di più parole
-                topic = inp[0].strip()
-                if topic in self.topic_message.keys():
-                    message = inp[1].strip()
-                    messaggio = '[SEND] {"topic": "%s", "message": "%s"}' % (topic, message)
-                    self._send_message(messaggio)
+                if inp.count('&')==1:
+                    inp = inp.split('&') # modificare per inviare messagi di più parole
+                    topic = inp[0].strip()
+                    if topic in self.topic_message.keys():
+                        message = inp[1].strip()
+                        messaggio = '[SEND] {"topic": "%s", "message": "%s"}' % (topic, message)
+                        self._send_message(messaggio)
+                    else:
+                        print(f'You are not subscribed to the topic, before posting a message'
+                              f' run the <subscribe> command followed by the topic')
                 else:
-                    print(f'You are not subscribed to the topic, before posting a message'
-                          f' run the <subscribe> command followed by the topic')
+                    print('Font "&" must only be used to separete topic and message!')
             else:
                 print('You are not connected to the broker! Before proceeding run a connect')
          
@@ -141,21 +145,16 @@ class myPrompt(Cmd):
     def _receive_message(self, clientsocket):
         while self.is_connect:
             try:
-                received = False
-                ready,output2,output3 = select.select([clientsocket], [], [], 2.0)
-                if ready != []:
+                readable, writable,exceptional = select.select([clientsocket], [], [], 2.0)
+                if readable != []:
                     data = clientsocket.recv(4096)
-                    if data:
-                        received = True
-                if received:
-                    a = data.decode('UTF-8')
-                    print(a)
-                    if a[0] == '{':
-                        self._buffer(a)
+                    if data:                        
+                        a = data.decode('UTF-8')
+                        print(a)
+                        if a[0] == '{':
+                            self._buffer(a)
             except Exception as error_type:
                 print(f'[ERROR] -> Error in receiving message!\n Error type: {error_type}')
-                self.is_connect=False
-                print(f'To log back on run <connect> command')
     
     def _send_message(self, messaggio):
         """
